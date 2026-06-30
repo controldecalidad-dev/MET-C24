@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MET C24 — Evaluación de Alternativas Tecnológicas
 
-## Getting Started
+Herramienta interna de **Control24** para evaluar, comparar y documentar soluciones tecnológicas (videoverificación con IA, control de acceso, analítica de video, etc.).
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router)
+- **React 19** + **TypeScript**
+- **Tailwind CSS**
+- **Persistencia**: `localStorage` (intercambiable vía `StorageAdapter`)
+
+## Instalación
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrí [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Producción
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Estructura de carpetas
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/                      # Rutas Next.js
+  page.tsx                # Pantalla inicial
+  evaluaciones/
+    page.tsx              # Lista + ranking
+    nueva/page.tsx        # Nueva evaluación
+    [id]/page.tsx         # Detalle
+    [id]/editar/page.tsx  # Edición
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+components/
+  evaluacion/             # Formulario y secciones
+  resultados/             # Tabla y ranking
+  ui/                     # Componentes base
+  layout/                 # Header
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+lib/
+  types.ts                # Tipos TypeScript
+  scoring.ts              # Cálculo de puntaje ponderado
+  storage.ts              # Capa de persistencia (StorageAdapter)
+  defaults.ts             # Valores por defecto
 
-## Deploy on Vercel
+hooks/
+  useEvaluaciones.ts      # Hook central de estado
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Cómo funciona el puntaje
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El puntaje final (sobre 10) es un promedio ponderado de 10 dimensiones:
+
+| Dimensión | Peso |
+|-----------|------|
+| Implementación | 10% |
+| Integración | 10% |
+| Inteligencia Artificial | 15% |
+| Experiencia de uso | 10% |
+| Rendimiento | 10% |
+| Seguridad | 10% |
+| Escalabilidad | 8% |
+| Soporte | 7% |
+| Resultado del piloto | 15% |
+| Evaluación final | 5% |
+
+Los pesos se configuran en `lib/scoring.ts`.
+
+## Conectar a base externa (Supabase, Google Sheets)
+
+La capa de persistencia usa la interfaz `StorageAdapter` (`lib/storage.ts`).
+Para cambiar el backend, implementá un nuevo adaptador y reemplazá la instancia exportada:
+
+```ts
+export const storage: StorageAdapter = new SupabaseAdapter();
+```
+
+Sin tocar nada más en la app.
