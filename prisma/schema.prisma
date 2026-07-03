@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  company   String?
+  origin    String?
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+
+  sends  Send[]
+  events Event[]
+}
+
+model Campaign {
+  id        String    @id @default(cuid())
+  name      String
+  subject   String
+  html      String    @db.Text
+  sentAt    DateTime?
+  status    String    @default("draft")
+  createdAt DateTime  @default(now())
+
+  sends  Send[]
+  events Event[]
+}
+
+model Send {
+  id         String   @id @default(cuid())
+  campaignId String
+  contactId  String
+  email      String
+  sentAt     DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact  Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, contactId])
+}
+
+model Event {
+  id         String   @id @default(cuid())
+  campaignId String
+  contactId  String
+  type       String
+  target     String?
+  url        String?
+  userAgent  String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact  Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, contactId, type], name: "unique_open")
+}
